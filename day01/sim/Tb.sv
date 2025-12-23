@@ -8,7 +8,8 @@ initial begin
     Clk = 1'b0;
 end
 
-always #5 Clk = ~Clk;
+// 250 MHz clock
+always #2 Clk = ~Clk;
 
 Top Top_u 
 (

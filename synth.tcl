@@ -14,6 +14,9 @@ read_verilog -sv [glob common/*.sv]
 read_verilog -sv [glob $DAY/rtl/*.sv]
 set_property file_type SystemVerilog [get_files *.sv]
 
+# Read constraints
+read_xdc common/constraints.xdc
+
 # Elaboration + basic RTL checks (lint-ish)
 synth_design -top top -part $PART -rtl
 
@@ -32,5 +35,5 @@ route_design
 write_checkpoint -force impl.dcp
 
 # Reports
-#report_utilization -file impl_util.rpt
-#report_timing_summary -file impl_timing.rpt
+report_utilization -file impl_util.rpt
+report_timing_summary -file impl_timing.rpt
