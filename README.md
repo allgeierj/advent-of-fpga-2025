@@ -10,16 +10,16 @@ and helper scripts for generating ROMs and running synthesis/simulation.
 - **Invocation:** Run from the repository root:
 
 ```bash
-./run.sh <action> <DAY>
+./run.sh <action> <DAY> <PART>
 # examples:
-./run.sh synth day01
-./run.sh sim day01
-./run.sh sim_gui day01
+./run.sh synth day01 part01
+./run.sh sim day01 part01
+./run.sh sim_gui day01 part01
 ```
 
 - **Behavior:**
   - Runs `python3 generate_rom.py <DAY>/input.txt common/mem.rom` to create the ROM.
-  - Writes `common/defines.svh` with `` `define ROM_DEPTH <n>`` and `` `define DAY "<DAY>"``.
+  - Writes `common/defines.svh` with `` `define ROM_DEPTH <n>``, `` `define <DAY>``, and `` `define <PART>``.
   - For `synth`: invokes Vivado batch synthesis: `vivado -mode batch -source synth.tcl -tclargs <DAY>`.
   - For `sim` / `sim_gui`: collects `common/*.sv`, `<DAY>/rtl/*.sv`, `<DAY>/sim/*.sv`, runs `xvlog -sv`, `xelab Tb -debug typical -timescale 1ns/1ps`, then `xsim work.Tb -runall` (or `-gui`).
 

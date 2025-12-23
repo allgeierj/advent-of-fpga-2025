@@ -6,13 +6,14 @@
 set -e
 
 # Parse input
-if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Usage: $0 <action> <DAY> (action: synth|sim|sim_gui; e.g., synth day01)"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "Usage: $0 <action> <DAY> <PART> (action: synth|sim|sim_gui; e.g., synth day01 part01)"
     exit 1
 fi
 
 ACTION=$1
 DAY=$2
+PART=$3
 
 case "$ACTION" in
     synth|sim|sim_gui)
@@ -39,7 +40,8 @@ echo "ROM length: $ROM_DEPTH bytes"
 echo "Creating $DEFINES_FILE..."
 cat <<EOL > "$DEFINES_FILE"
 \`define ROM_DEPTH $ROM_DEPTH
-\`define DAY "$DAY"
+\`define ${DAY^^}
+\`define ${PART^^}
 EOL
 
 # Call Vivado for selected action
