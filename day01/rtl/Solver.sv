@@ -50,14 +50,30 @@ always_comb begin
                 ASCII_L, ASCII_R: begin
                     automatic logic signed [31:0] dialPos = Q.DialPos;
                     automatic logic signed [31:0] dialDelta = (Q.DialDir == LEFT) ? -$signed(Q.DialAcc) : $signed(Q.DialAcc);
-
+                    automatic logic signed [31:0] dialPosUnwrapped = Q.DialPos + dialDelta;
+                    automatic logic [31:0] numCrosses = 32'd0;
+                    
                     dialPos = (dialPos + dialDelta) % 100;
                     if(dialPos < 0) dialPos = dialPos + 100;
-
+                    
+                    `ifdef PART01
                     if(dialPos == 0) begin
                         D.Password++;
                     end
-
+                    `else
+                    if (dialDelta >= 0) begin
+                        numCrosses = (dialPosUnwrapped >= 0) ? (dialPosUnwrapped / 100) : 32'd0;
+                    end 
+                    else begin
+                        automatic logic [31:0] dialDeltaMag = -dialDelta;
+                        automatic logic [31:0] clicksToZero = (Q.DialPos == 0) ? 32'd100 : Q.DialPos;
+                        if (dialDeltaMag >= clicksToZero) begin
+                            numCrosses = 32'd1 + (dialDeltaMag - clicksToZero) / 100;
+                        end
+                    end
+                    D.Password = D.Password + numCrosses;
+                    `endif
+                    
                     D.DialPos = dialPos;
                     D.DialAcc = 32'd0;
                     D.DialDir = (Data == ASCII_L) ? LEFT : RIGHT;
