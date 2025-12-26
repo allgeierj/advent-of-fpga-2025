@@ -22,7 +22,11 @@ always @(posedge Error or posedge Done)
 begin
     $display("Error: %b, Done: %b", Error, Done);
     if(Done) begin
+        `ifdef DAY01
         $display("Password is: %0d", Top_u.Solver_u.Q.Password);
+        `elsif DAY02
+        $display("Sum of invalid IDs is: %0d", Top_u.Solver_u.Q.InvalidIdSum);
+        `endif
     end
     $finish;
 end
