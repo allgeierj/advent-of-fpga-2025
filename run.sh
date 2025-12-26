@@ -72,7 +72,7 @@ else
 
     append_sv_files common
     append_sv_files "$DAY/rtl"
-    append_sv_files "$DAY/sim"
+    # append_sv_files "$DAY/sim"
 
     echo "File list:" 
     for fn in $FILES; do
