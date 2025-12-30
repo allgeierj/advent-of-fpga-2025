@@ -1,7 +1,13 @@
 # advent-of-fpga-2025
 
-A small FPGA Advent-of-Code repository containing per-day RTL, small simulation testbenches,
+An FPGA Advent of Code repository containing per-day RTL, small simulation testbenches,
 and helper scripts for generating ROMs and running synthesis/simulation.
+
+| Day | Part 1 | Part 2 |
+|-----|--------|--------|
+| 01  |✓|✓|
+| 02  |✓| |
+| 03  | | |
 
 ## Usage: `run.sh`
 
