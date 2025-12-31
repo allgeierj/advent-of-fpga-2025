@@ -1,13 +1,12 @@
 # advent-of-fpga-2025
 
-An FPGA Advent of Code repository containing per-day RTL, small simulation testbenches,
-and helper scripts for generating ROMs and running synthesis/simulation.
+An FPGA Advent of Code repository containing per-day RTL, small simulation testbench, and helper scripts for generating ROMs and running synthesis/simulation.
 
 | Day | Part 1 | Part 2 |
 |-----|--------|--------|
 | 01  |✓|✓|
 | 02  |✓| |
-| 03  | | |
+| 03  |✓| |
 
 ## Usage: `run.sh`
 
@@ -34,7 +33,3 @@ and helper scripts for generating ROMs and running synthesis/simulation.
   - **Input file:** ensure `<DAY>/input.txt` exists (e.g., `day01/input.txt`).
   - **Permissions:** make the script executable if needed: `chmod +x run.sh`.
 
-- **Notes:**
-  - The script exits with usage help if action or day are missing or invalid.
-  - ROM depth is computed from the generated ROM and written into `common/defines.svh`.
-  - See `run.sh` for exact implementation details and file discovery order.
