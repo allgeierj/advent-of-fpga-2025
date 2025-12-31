@@ -6,7 +6,7 @@ An FPGA Advent of Code repository containing per-day RTL, small simulation testb
 |-----|--------|--------|
 | 01  |✓|✓|
 | 02  |✓| |
-| 03  |✓| |
+| 03  |✓|✓|
 
 ## Usage: `run.sh`
 
@@ -26,7 +26,7 @@ An FPGA Advent of Code repository containing per-day RTL, small simulation testb
   - Runs `python3 generate_rom.py <DAY>/input.txt common/mem.rom` to create the ROM.
   - Writes `common/defines.svh` with `` `define ROM_DEPTH <n>``, `` `define <DAY>``, and `` `define <PART>``.
   - For `synth`: invokes Vivado batch synthesis: `vivado -mode batch -source synth.tcl -tclargs <DAY>`.
-  - For `sim` / `sim_gui`: collects `common/*.sv`, `<DAY>/rtl/*.sv`, `<DAY>/sim/*.sv`, runs `xvlog -sv`, `xelab Tb -debug typical -timescale 1ns/1ps`, then `xsim work.Tb -runall` (or `-gui`).
+  - For `sim` / `sim_gui`: collects `common/*.sv`, `<DAY>/rtl/*.sv`, runs `xvlog -sv`, `xelab Tb -debug typical -timescale 1ns/1ps`, then `xsim work.Tb -runall` (or `-gui`).
 
 - **Prerequisites:**
   - **Tools:** `python3`, Vivado tools (`vivado`, `xvlog`, `xelab`, `xsim`) available in `PATH` for synth/sim.
