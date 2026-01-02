@@ -42,11 +42,9 @@ localparam logic [36:0] JoltageMult [0:11] = '{
 `endif
 
 
-typedef enum {
+typedef enum logic [1:0] {
     S_IDLE,
-    S_READ_JOLTAGE,
-    S_ACCUM_BANK_JOLTAGE,
-    S_ACCUM_TOTAL_JOLTAGE,
+    S_RUN,
     S_DONE,
     S_ERROR
 } Fsm_e;
@@ -56,8 +54,8 @@ typedef struct packed {
     RomAddr_t Addr;
     logic [$clog2(BATS_PER_BANK):0] BatteryCount;
     logic [0:BATS_PER_JOLTAGE-1][3:0] Joltage;
-    logic [$clog2(BATS_PER_JOLTAGE):0] JoltageMultCount;
-    logic [BANK_JOLTAGE_BITS-1:0] BankJoltage;
+    logic Accum;
+    logic [$clog2(BATS_PER_JOLTAGE):0] AccumMultPlace;
     logic [TOTAL_JOLTAGE_BITS-1:0] TotalJoltage;
 } State_ts;
 State_ts Q = '0, D;
@@ -70,9 +68,9 @@ always_comb begin
     case(Q.Fsm)
         S_IDLE: begin
             Addr = '0;
-            D.Fsm = S_READ_JOLTAGE;
+            D.Fsm = S_RUN;
         end
-        S_READ_JOLTAGE: begin
+        S_RUN: begin
             Addr = Q.Addr + 1;
             D.BatteryCount++;
             case(Data) inside
@@ -82,6 +80,7 @@ always_comb begin
                     automatic logic [3:0] minPlace = 0;
                     if (Q.BatteryCount >= BATS_PER_BANK - BATS_PER_JOLTAGE) begin
                         minPlace = Q.BatteryCount - (BATS_PER_BANK - BATS_PER_JOLTAGE);
+                        D.Accum = 1'b1;
                     end
                     for(logic [$clog2(BATS_PER_JOLTAGE):0] i = 0; i < BATS_PER_JOLTAGE; i++) begin
                         if(i < minPlace) continue;
@@ -92,7 +91,8 @@ always_comb begin
                         end
                     end
                     if(Q.BatteryCount == BATS_PER_BANK -1) begin
-                        D.Fsm = S_ACCUM_BANK_JOLTAGE;
+                        D.Joltage[0] = 4'd0;
+                        D.BatteryCount = '0;
                     end
                 end
                 ASCII_EOT: begin // EOT
@@ -103,22 +103,6 @@ always_comb begin
                 end
             endcase
         end
-        S_ACCUM_BANK_JOLTAGE: begin
-            D.Fsm = S_ACCUM_BANK_JOLTAGE;
-            D.JoltageMultCount++;
-            D.BankJoltage += Q.Joltage[Q.JoltageMultCount] * JoltageMult[Q.JoltageMultCount];
-            if(Q.JoltageMultCount == BATS_PER_JOLTAGE - 1) begin
-                D.Fsm = S_ACCUM_TOTAL_JOLTAGE;
-            end    
-        end
-        S_ACCUM_TOTAL_JOLTAGE: begin
-            D.Fsm = S_READ_JOLTAGE;
-            D.TotalJoltage += Q.BankJoltage;
-            D.BankJoltage = '0;
-            D.Joltage = '0;
-            D.BatteryCount = '0;
-            D.JoltageMultCount = '0;
-        end
         S_DONE: begin
             Done = 1'b1;
         end
@@ -126,6 +110,16 @@ always_comb begin
             Error = 1'b1;
         end
     endcase
+
+    if(Q.Accum) begin
+        D.AccumMultPlace++;
+        D.TotalJoltage += Q.Joltage[Q.AccumMultPlace] * JoltageMult[Q.AccumMultPlace];
+    end
+    if(Q.AccumMultPlace == BATS_PER_JOLTAGE - 1) begin
+        D.Accum = 1'b0;
+        D.AccumMultPlace = '0;
+    end
+
     D.Addr = Addr;
 end
 
