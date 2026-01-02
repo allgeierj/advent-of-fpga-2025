@@ -1,6 +1,6 @@
 # advent-of-fpga-2025
 
-An FPGA Advent of Code repository containing per-day RTL, small simulation testbench, and helper scripts for generating ROMs and running synthesis/simulation.
+An FPGA Advent of Code repository containing per-day RTL, small simulation testbench, and helper scripts for generating ROMs and running synthesis/simulation. Targeting part `xc7a35tcpg236-1` @ 250 MHz for synthesis.
 
 | Day | Part 1 | Part 2 |
 |-----|--------|--------|
