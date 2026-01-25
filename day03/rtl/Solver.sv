@@ -8,7 +8,8 @@ import AocPkg::*;
     output RomAddr_t Addr,
     input logic [7:0] Data,
     output logic Error,
-    output logic Done
+    output logic Done,
+    output logic [47:0] Answer
 );
 
 localparam logic [7:0] ASCII_EOT = 8'h04;
@@ -56,9 +57,13 @@ typedef struct packed {
     logic [0:BATS_PER_JOLTAGE-1][3:0] Joltage;
     logic Accum;
     logic [$clog2(BATS_PER_JOLTAGE):0] AccumMultPlace;
+    logic [BANK_JOLTAGE_BITS-1:0] AccumJoltage;
     logic [TOTAL_JOLTAGE_BITS-1:0] TotalJoltage;
+    logic [1:0] Flush;
 } State_ts;
 State_ts Q = '0, D;
+
+assign Answer = Q.TotalJoltage;
 
 always_comb begin
     D = Q;
@@ -97,6 +102,7 @@ always_comb begin
                 end
                 ASCII_EOT: begin // EOT
                     D.Fsm = S_DONE;
+                    D.Flush = 2'd1;
                 end
                 default: begin
                     D.Fsm = S_ERROR;
@@ -104,7 +110,8 @@ always_comb begin
             endcase
         end
         S_DONE: begin
-            Done = 1'b1;
+            if(Q.Flush > 0) D.Flush--;
+            else Done = 1'b1;
         end
         S_ERROR: begin
             Error = 1'b1;
@@ -113,11 +120,15 @@ always_comb begin
 
     if(Q.Accum) begin
         D.AccumMultPlace++;
-        D.TotalJoltage += Q.Joltage[Q.AccumMultPlace] * JoltageMult[Q.AccumMultPlace];
-    end
-    if(Q.AccumMultPlace == BATS_PER_JOLTAGE - 1) begin
-        D.Accum = 1'b0;
-        D.AccumMultPlace = '0;
+        D.TotalJoltage += Q.AccumJoltage;
+        if(Q.AccumMultPlace < BATS_PER_JOLTAGE)
+            D.AccumJoltage = Q.Joltage[Q.AccumMultPlace] * JoltageMult[Q.AccumMultPlace];
+        else D.AccumJoltage = '0;
+        if(Q.AccumMultPlace == BATS_PER_JOLTAGE) begin
+            D.Accum = 1'b0;
+            D.AccumMultPlace = '0;
+            D.AccumJoltage = '0;
+        end
     end
 
     D.Addr = Addr;
