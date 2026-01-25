@@ -8,8 +8,8 @@ initial begin
     Clk = 1'b0;
 end
 
-// 250 MHz clock
-always #2 Clk = ~Clk;
+// 125 MHz clock
+always #4 Clk = ~Clk;
 
 Top Top_u 
 (
@@ -28,6 +28,8 @@ begin
         $display("Sum of invalid IDs is: %0d", Top_u.Solver_u.Q.InvalidIdSum);
         `elsif DAY03
         $display("Total joltage is: %0d", Top_u.Solver_u.Q.TotalJoltage);
+        `elsif DAY04
+        $display("Number of accessible rolls is: %0d", Top_u.Solver_u.Answer);
         `endif
     end
     $finish;
