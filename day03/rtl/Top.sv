@@ -3,7 +3,8 @@ import AocPkg::*;
 (
     input logic Clk,
     output logic Error,
-    output logic Done
+    output logic Done,
+    output logic [47:0] Answer
 );
 
 RomAddr_t Addr;
@@ -22,7 +23,8 @@ Solver Solver_u
     .Addr(Addr),
     .Data(Data),
     .Error(Error),
-    .Done(Done)
+    .Done(Done),
+    .Answer(Answer)
 );
 
 endmodule

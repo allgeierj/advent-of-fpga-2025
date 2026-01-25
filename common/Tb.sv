@@ -27,7 +27,7 @@ begin
         `elsif DAY02
         $display("Sum of invalid IDs is: %0d", Top_u.Solver_u.Q.InvalidIdSum);
         `elsif DAY03
-        $display("Total joltage is: %0d", Top_u.Solver_u.Q.TotalJoltage);
+        $display("Total joltage is: %0d", Top_u.Solver_u.Answer);
         `elsif DAY04
         $display("Number of accessible rolls is: %0d", Top_u.Solver_u.Answer);
         `endif
