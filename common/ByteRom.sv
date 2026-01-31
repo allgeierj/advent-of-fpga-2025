@@ -13,7 +13,7 @@ initial begin
 end
 
 always_ff @(posedge Clk) begin
-    (* ram_style = "block" *) Data <= Mem[Addr];
+    (* rom_style = "block" *) Data <= Mem[Addr];
 end
 
 endmodule
