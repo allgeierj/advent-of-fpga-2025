@@ -23,7 +23,7 @@ begin
     $display("Error: %b, Done: %b", Error, Done);
     if(Done) begin
         `ifdef DAY01
-        $display("Password is: %0d", Top_u.Solver_u.Q.Password);
+        $display("Password is: %0d", Top_u.Solver_u.Answer);
         `elsif DAY03
         $display("Total joltage is: %0d", Top_u.Solver_u.Answer);
         `elsif DAY04
