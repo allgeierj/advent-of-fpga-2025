@@ -5,8 +5,9 @@ import AocPkg::*;
 ) 
 (
     input logic Clk,
-    output RomAddr_t Addr,
-    input logic [7:0] Data,
+    output RamAddr_t ReadAddr,
+    output logic ReadEnable,
+    input logic [7:0] ReadData,
     output logic Error,
     output logic Done,
     output logic [15:0] Answer
@@ -27,7 +28,8 @@ typedef enum logic [1:0] {
 } Fsm_e;
 
 typedef struct packed {
-    RomAddr_t Addr;
+    RamAddr_t ReadAddr;
+    logic ReadEnable;
     Fsm_e Fsm;
     ColumnIter_t Column;
     logic ReadCell;
@@ -40,9 +42,10 @@ typedef struct packed {
     logic Error;
     logic Done;
 } State_ts;
-State_ts Q = '0, D;
+State_ts Q = '{ReadEnable: 1'b1, Fsm: S_IDLE, default: '0}, D;
 
-assign Addr = Q.Addr;
+assign ReadAddr = Q.ReadAddr;
+assign ReadEnable = Q.ReadEnable;
 assign Answer = Q.AccessibleRolls;
 assign Error = Q.Fsm == S_ERROR;
 assign Done = Q.Fsm == S_DONE;
@@ -53,7 +56,7 @@ always_comb begin
     case(Q.Fsm)
         S_IDLE: begin
             D.Fsm = S_RUN;
-            D.Addr++;
+            D.ReadAddr++;
             D.Column = '0;
             D.ReadCell = 1'b1;
         end
@@ -63,8 +66,8 @@ always_comb begin
             if(Q.Column inside {[0:GRID_COLUMNS-1]}) begin
                 D.NextRow[Q.Column] = 1'b0;
                 if(Q.ReadCell) begin
-                    if(Q.Column < GRID_COLUMNS - 1) D.Addr++;
-                    case(Data)
+                    if(Q.Column < GRID_COLUMNS - 1) D.ReadAddr++;
+                    case(ReadData)
                         ASCII_AT: D.NextRow[Q.Column] = 1'b1;
                         ASCII_EOT: D.ReadCell = 1'b0;
                     endcase
@@ -106,7 +109,7 @@ always_comb begin
                 D.CurrRowValid = Q.NextRowValid;
                 D.NextRow = '0;
                 D.NextRowValid = 1'b0;
-                if(Q.ReadCell) D.Addr++;
+                if(Q.ReadCell) D.ReadAddr++;
                 if(!({Q.CurrRowValid, Q.NextRowValid})) begin
                     D.Fsm = S_DONE;
                 end

@@ -27,7 +27,11 @@ begin
         `elsif DAY03
         $display("Total joltage is: %0d", Top_u.Solver_u.Answer);
         `elsif DAY04
-        $display("Number of accessible rolls is: %0d", Top_u.Solver_u.Answer);
+            `ifdef PART01
+            $display("Number of accessible rolls is: %0d", Top_u.Solver_u.Answer);
+            `elsif PART02
+            $display("Number of removed rolls is: %0d", Top_u.Solver_u.Answer);
+            `endif
         `endif
     end
     $finish;

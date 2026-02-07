@@ -7,21 +7,30 @@ import AocPkg::*;
     output logic [15:0] Answer
 );
 
-RomAddr_t Addr;
-logic [7:0] Data;
+RamAddr_t ReadAddr;
+RamAddr_t WriteAddr;
+logic ReadEnable;
+logic WriteEnable;
+logic [7:0] ReadData;
+logic [7:0] WriteData;
 
-ByteRom ByteRom_u 
+ByteRam ByteRam_u 
 (
     .Clk(Clk),
-    .Addr(Addr),
-    .Data(Data)
+    .ReadAddr(ReadAddr),
+    .WriteAddr(WriteAddr),
+    .ReadEnable(ReadEnable),
+    .WriteEnable(WriteEnable),
+    .ReadData(ReadData),
+    .WriteData(WriteData)
 );
 
 Solver Solver_u 
 (
     .Clk(Clk),
-    .Addr(Addr),
-    .Data(Data),
+    .ReadAddr(ReadAddr),
+    .ReadEnable(ReadEnable),
+    .ReadData(ReadData),
     .Error(Error),
     .Done(Done),
     .Answer(Answer)
