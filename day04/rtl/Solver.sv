@@ -24,8 +24,8 @@ localparam logic [7:0] ASCII_X = 8'h58;
 localparam logic [7:0] ASCII_EOT = 8'h04;
 
 typedef logic [$clog2(GRID_COLUMNS):0] ColumnIter_t;
-typedef logic [$clog2(GRID_COLUMNS):0] RowIter_t;
 typedef logic [0:GRID_COLUMNS-1] Row_t;
+typedef logic [0:2] RowWindow_t;
 
 typedef enum logic [1:0] {
     S_IDLE,
@@ -45,6 +45,9 @@ typedef struct packed {
     logic CurrRowValid;
     Row_t NextRow;
     logic NextRowValid;
+    RowWindow_t PrevRowWindow;
+    RowWindow_t CurrRowWindow;
+    logic EvalCellIsRoll;
     logic [15:0] AccessibleRolls;
     `ifdef PART02
     logic IsFirstRow;
@@ -99,29 +102,46 @@ always_comb begin
                     if(Q.Column == GRID_COLUMNS - 1) D.NextRowValid = 1'b1;
                 end
             end
+            // Row window for Prev and Curr rows
+            // Reduces muxing for adjacent count logic
+            D.PrevRowWindow = '0;
+            D.CurrRowWindow = '0;
+            if(Q.Column inside {[0:GRID_COLUMNS-1]}) begin
+                if(Q.Column > 0) begin
+                    D.PrevRowWindow[0] = Q.PrevRow[Q.Column-1];
+                    D.CurrRowWindow[0] = Q.CurrRow[Q.Column-1];
+                end
+                D.PrevRowWindow[1] = Q.PrevRow[Q.Column];
+                D.CurrRowWindow[1] = Q.CurrRow[Q.Column];
+                if(Q.Column < GRID_COLUMNS - 1) begin
+                    D.PrevRowWindow[2] = Q.PrevRow[Q.Column+1];
+                    D.CurrRowWindow[2] = Q.CurrRow[Q.Column+1];
+                end
+                D.EvalCellIsRoll = Q.CurrRow[Q.Column];
+            end
             // Count
             if(Q.Column inside {[1:GRID_COLUMNS]}) begin
                 // Evaluating CurrRow[Column - 1]
                 if(Q.CurrRowValid) begin
                     automatic logic [3:0] adjacentCount = 4'd0;
                     // Top
-                    if(Q.PrevRow[Q.Column-1]) adjacentCount++;
+                    if(Q.PrevRowWindow[1]) adjacentCount++;
                     // Bottom
                     if(Q.NextRow[Q.Column-1]) adjacentCount++;
                     // Left
                     if(Q.Column > 1) begin
-                        if(Q.CurrRow[Q.Column-2]) adjacentCount++;
-                        if(Q.PrevRow[Q.Column-2]) adjacentCount++;
+                        if(Q.CurrRowWindow[0]) adjacentCount++;
+                        if(Q.PrevRowWindow[0]) adjacentCount++;
                         if(Q.NextRow[Q.Column-2]) adjacentCount++;
                     end
                     // Right
                     if(Q.Column < GRID_COLUMNS) begin
-                        if(Q.CurrRow[Q.Column]) adjacentCount++;
-                        if(Q.PrevRow[Q.Column]) adjacentCount++;
+                        if(Q.CurrRowWindow[2]) adjacentCount++;
+                        if(Q.PrevRowWindow[2]) adjacentCount++;
                         // D since this was read on same clock
                         if(D.NextRow[Q.Column]) adjacentCount++; 
                     end
-                    if(Q.CurrRow[Q.Column-1] && adjacentCount < 4) begin
+                    if(Q.EvalCellIsRoll && adjacentCount < 4) begin
                         D.AccessibleRolls++;
                         `ifdef PART02
                         D.CurrIterRollRemoved = 1'b1;
@@ -133,7 +153,7 @@ always_comb begin
                     end
                 end
             end
-            // Switch rows
+            // Shift rows
             if(Q.Column == GRID_COLUMNS) begin
                 D.Column = '0;
                 D.PrevRow = Q.CurrRow;

@@ -7,7 +7,7 @@ An FPGA Advent of Code repository containing per-day RTL, small simulation testb
 | 01  |✓||
 | 02  | | |
 | 03  |✓|✓|
-| 04  |✓|
+| 04  |✓|✓|
 | 05  | | |
 | 06  | | |
 | 07  | | |
