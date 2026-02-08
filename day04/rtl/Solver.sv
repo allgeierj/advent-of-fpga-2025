@@ -8,6 +8,11 @@ import AocPkg::*;
     output RamAddr_t ReadAddr,
     output logic ReadEnable,
     input logic [7:0] ReadData,
+    `ifdef PART02
+    output RamAddr_t WriteAddr,
+    output logic WriteEnable,
+    output logic [7:0] WriteData,
+    `endif
     output logic Error,
     output logic Done,
     output logic [15:0] Answer
@@ -15,9 +20,11 @@ import AocPkg::*;
 
 localparam logic [7:0] ASCII_DOT = 8'h2E;
 localparam logic [7:0] ASCII_AT = 8'h40;
+localparam logic [7:0] ASCII_X = 8'h58;
 localparam logic [7:0] ASCII_EOT = 8'h04;
 
 typedef logic [$clog2(GRID_COLUMNS):0] ColumnIter_t;
+typedef logic [$clog2(GRID_COLUMNS):0] RowIter_t;
 typedef logic [0:GRID_COLUMNS-1] Row_t;
 
 typedef enum logic [1:0] {
@@ -39,6 +46,14 @@ typedef struct packed {
     Row_t NextRow;
     logic NextRowValid;
     logic [15:0] AccessibleRolls;
+    `ifdef PART02
+    logic IsFirstRow;
+    RamAddr_t WriteAddr;
+    logic WriteEnable;
+    logic [7:0] WriteData;
+    RamAddr_t CurrRowStartAddr;
+    logic CurrIterRollRemoved;
+    `endif
     logic Error;
     logic Done;
 } State_ts;
@@ -47,11 +62,17 @@ State_ts Q = '{ReadEnable: 1'b1, Fsm: S_IDLE, default: '0}, D;
 assign ReadAddr = Q.ReadAddr;
 assign ReadEnable = Q.ReadEnable;
 assign Answer = Q.AccessibleRolls;
+`ifdef PART02
+assign WriteAddr = Q.WriteAddr;
+assign WriteEnable = Q.WriteEnable;
+assign WriteData = Q.WriteData;
+`endif
 assign Error = Q.Fsm == S_ERROR;
 assign Done = Q.Fsm == S_DONE;
 
 always_comb begin
     D = Q;
+    `ifdef PART02 D.WriteEnable = 1'b0; `endif
     
     case(Q.Fsm)
         S_IDLE: begin
@@ -59,6 +80,10 @@ always_comb begin
             D.ReadAddr++;
             D.Column = '0;
             D.ReadCell = 1'b1;
+            `ifdef PART02
+            D.IsFirstRow = 1'b1;
+            D.CurrRowStartAddr = '0; 
+            `endif
         end
         S_RUN: begin
             D.Column++;
@@ -98,6 +123,13 @@ always_comb begin
                     end
                     if(Q.CurrRow[Q.Column-1] && adjacentCount < 4) begin
                         D.AccessibleRolls++;
+                        `ifdef PART02
+                        D.CurrIterRollRemoved = 1'b1;
+                        D.CurrRow[Q.Column-1] = 1'b0;
+                        D.WriteAddr = Q.CurrRowStartAddr + (Q.Column - 1);
+                        D.WriteData = ASCII_X;
+                        D.WriteEnable = 1'b1;
+                        `endif
                     end
                 end
             end
@@ -109,9 +141,29 @@ always_comb begin
                 D.CurrRowValid = Q.NextRowValid;
                 D.NextRow = '0;
                 D.NextRowValid = 1'b0;
+
+                `ifdef PART02
+                D.IsFirstRow = 1'b0;
+                if(!Q.IsFirstRow) D.CurrRowStartAddr += GRID_COLUMNS;
+                else D.CurrRowStartAddr = '0;
+                `endif
+
                 if(Q.ReadCell) D.ReadAddr++;
                 if(!({Q.CurrRowValid, Q.NextRowValid})) begin
+                    `ifdef PART01
                     D.Fsm = S_DONE;
+                    `elsif PART02
+                    D.CurrIterRollRemoved = 1'b0;
+                    if(Q.CurrIterRollRemoved) begin
+                        D.ReadAddr = '0;
+                        D.Fsm = S_IDLE;
+                        D.PrevRow = '0;
+                        D.CurrRow = '0;
+                    end
+                    else begin
+                        D.Fsm = S_DONE;
+                    end
+                    `endif
                 end
             end
         end       

@@ -8,22 +8,34 @@ import AocPkg::*;
 );
 
 RamAddr_t ReadAddr;
-RamAddr_t WriteAddr;
 logic ReadEnable;
-logic WriteEnable;
 logic [7:0] ReadData;
+`ifdef PART02
+RamAddr_t WriteAddr;
+logic WriteEnable;
 logic [7:0] WriteData;
+`endif
 
-ByteRam ByteRam_u 
+
+`ifdef PART01
+ByteRom ByteRom_u 
+(
+    .Clk(Clk),
+    .Addr(ReadAddr),
+    .Data(ReadData)
+);
+`elsif PART02
+ByteRamSDP ByteRamSDP_u 
 (
     .Clk(Clk),
     .ReadAddr(ReadAddr),
-    .WriteAddr(WriteAddr),
     .ReadEnable(ReadEnable),
-    .WriteEnable(WriteEnable),
     .ReadData(ReadData),
+    .WriteAddr(WriteAddr),
+    .WriteEnable(WriteEnable),
     .WriteData(WriteData)
 );
+`endif
 
 Solver Solver_u 
 (
@@ -31,6 +43,11 @@ Solver Solver_u
     .ReadAddr(ReadAddr),
     .ReadEnable(ReadEnable),
     .ReadData(ReadData),
+    `ifdef PART02
+    .WriteAddr(WriteAddr),
+    .WriteEnable(WriteEnable),
+    .WriteData(WriteData),
+    `endif
     .Error(Error),
     .Done(Done),
     .Answer(Answer)
